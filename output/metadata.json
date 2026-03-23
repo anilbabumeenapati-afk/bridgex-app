@@ -1,0 +1,14 @@
+{
+  "report_type": "DORA_POC",
+  "fields": [
+    "C_01.01.a",
+    "C_02.01.b"
+  ],
+  "columns": [
+    "field",
+    "min",
+    "max",
+    "unit",
+    "risk_flags"
+  ]
+}
