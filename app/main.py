@@ -52,7 +52,7 @@ app.include_router(api_router, prefix="/api/v1")
 if os.path.exists("output"):
     app.mount("/files", StaticFiles(directory="output"), name="files")
 
-    @app.exception_handler(Exception)
+@app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     print("🔥🔥🔥 GLOBAL ERROR:", str(exc))
     return JSONResponse(
