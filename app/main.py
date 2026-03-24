@@ -2,6 +2,9 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"status": "minimal working"}
+try:
+    from app.api.router import router
+    app.include_router(router)
+    print("✅ ROUTER LOADED")
+except Exception as e:
+    print("❌ IMPORT ERROR:", str(e))
