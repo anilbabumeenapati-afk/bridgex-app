@@ -10,6 +10,11 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
+@app.get("/")
+def root():
+    print("🔥 ROOT HIT")
+    return {"status": "OK"}
+
 @app.get("/download/{filename}")
 def download_file(filename: str):
     file_path = f"output/{filename}"
