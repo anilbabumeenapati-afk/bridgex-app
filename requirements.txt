@@ -4,3 +4,6 @@ python-multipart
 pdfplumber
 PyPDF2
 pymupdf
+sqlalchemy
+databases
+aiosqlite
