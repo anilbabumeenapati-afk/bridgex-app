@@ -7,6 +7,8 @@ from app.db.models import Base
 import app.db.models
 from app.db.session import engine
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+from fastapi.requests import Request
 import os
 
 app = FastAPI()
@@ -49,3 +51,11 @@ app.include_router(api_router, prefix="/api/v1")
 
 if os.path.exists("output"):
     app.mount("/files", StaticFiles(directory="output"), name="files")
+
+    @app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print("🔥🔥🔥 GLOBAL ERROR:", str(exc))
+    return JSONResponse(
+        status_code=500,
+        content={"error": str(exc)},
+    )
