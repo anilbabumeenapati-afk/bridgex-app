@@ -7,6 +7,7 @@ from app.db.models import Base
 import app.db.models
 from app.db.session import engine
 from fastapi.staticfiles import StaticFiles
+import os
 
 app = FastAPI()
 
@@ -35,7 +36,16 @@ app.add_middleware(
 app.mount("/files", StaticFiles(directory="output"), name="files")
 
 # ✅ CREATE TABLES
-#Base.metadata.create_all(bind=engine)
+@app.on_event("startup")
+def init_db():
+    try:
+        print("🔧 Initializing DB...")
+        Base.metadata.create_all(bind=engine)
+        print("✅ DB Ready")
+    except Exception as e:
+        print("❌ DB ERROR:", str(e))
 
 app.include_router(api_router, prefix="/api/v1")
-app.mount("/files", StaticFiles(directory="output"), name="files")
+
+if os.path.exists("output"):
+    app.mount("/files", StaticFiles(directory="output"), name="files")
