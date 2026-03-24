@@ -192,19 +192,19 @@ export default function Result() {
 
             <div className="flex gap-3 flex-wrap">
 
-              <a href={`http://127.0.0.1:8000/download/${data.xbrl_csv?.csv}`} download>
+              <a href={`https://bridgex-app.onrender.com/api/v1/download/${data.xbrl_csv?.csv}`} download>
                 <button className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
                   CSV Report
                 </button>
               </a>
 
-              <a href={`http://127.0.0.1:8000/download/${data.xbrl_csv?.metadata}`} download>
+              <a href={`https://bridgex-app.onrender.com/api/v1/download/${data.xbrl_csv?.metadata}`} download>
                 <button className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
                   Metadata
                 </button>
               </a>
 
-              <a href={`http://127.0.0.1:8000/download/${data.zip}`} download>
+              <a href={`https://bridgex-app.onrender.com/api/v1/download/${data.zip}`} download>
                 <button className="px-4 py-2 bg-green-600 rounded hover:bg-green-700">
                   Full Package (ZIP)
                 </button>

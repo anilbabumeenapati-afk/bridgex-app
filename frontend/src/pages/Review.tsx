@@ -13,7 +13,7 @@ export default function Review() {
     const fetchEvidence = async () => {
       try {
         const res = await axios.get(
-          `http://127.0.0.1:8000/api/v1/evidence/${id}`
+          `https://bridgex-app.onrender.com/api/v1/evidence/${id}`
         );
         setEvidence(res.data.evidence);
       } catch (err) {
@@ -29,7 +29,7 @@ export default function Review() {
 
   const approve = async (field: string) => {
     const res = await axios.post(
-      `http://127.0.0.1:8000/api/v1/review/approve/${id}/${field}`
+      `https://bridgex-app.onrender.com/api/v1/review/approve/${id}/${field}`
     );
 
     setEvidence(res.data.evidence);
@@ -41,7 +41,7 @@ export default function Review() {
 
   const reject = async (field: string) => {
     const res = await axios.post(
-      `http://127.0.0.1:8000/api/v1/review/reject/${id}/${field}`
+      `https://bridgex-app.onrender.com/api/v1/review/reject/${id}/${field}`
     );
 
     setEvidence(res.data.evidence);

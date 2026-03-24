@@ -26,7 +26,7 @@ export default function Upload() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/v1/upload/",
+        "https://bridgex-app.onrender.com/api/v1",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
