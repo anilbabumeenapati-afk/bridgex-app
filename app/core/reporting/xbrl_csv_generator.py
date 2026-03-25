@@ -20,7 +20,8 @@ def generate_xbrl_csv(dpm_output, entity, period, output_dir="output"):
             "metric": dpm_id,
             "min": value.get("min"),
             "max": value.get("max"),
-            "unit": data.get("unit")
+            "unit": data.get("unit"),
+            "risk_flags": ", ".join(data.get("risk_flags", [])) or "None"
         }
 
         rows.append(row)
@@ -28,7 +29,7 @@ def generate_xbrl_csv(dpm_output, entity, period, output_dir="output"):
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["entity", "period", "metric", "min", "max", "unit"]
+            fieldnames=["entity", "period", "metric", "min", "max", "unit", "risk_flags"]
         )
         writer.writeheader()
         writer.writerows(rows)
