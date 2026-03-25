@@ -18,7 +18,7 @@ def root():
     print("🔥 ROOT HIT")
     return {"status": "OK"}
 
-@app.get("/download/{filename}")
+@app.get("/api/v1/download/{filename}")
 def download_file(filename: str):
     file_path = f"output/{filename}"
     return FileResponse(
