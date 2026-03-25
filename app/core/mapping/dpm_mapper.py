@@ -1,4 +1,5 @@
 from app.core.mapping.dpm_registry import DPM_REGISTRY, FIELD_MAPPING
+
 def map_to_dpm(passport):
     result = {}
 
@@ -39,7 +40,8 @@ def map_to_dpm(passport):
                 "max": normalized.get("max")
             },
             "unit": config.get("unit"),
-            "risk_flags": field_data.get("risk_flags", [])
+            "risk_flags": (field_data.get("risk_flags")
+                        or field_data.get("metadata", {}).get("risk_flags", []))
         }
 
     print("DPM OUTPUT:", result)
