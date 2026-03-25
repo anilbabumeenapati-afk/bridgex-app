@@ -6,6 +6,9 @@ export default function Result() {
   const navigate = useNavigate();
 
   const data = location.state;
+  const filename = data.xbrl_csv?.csv?.split("/").pop();
+  const metadataFile = data.xbrl_csv?.metadata?.split("/").pop();
+  const zipFile = data.zip?.split("/").pop();
 
   if (!data) {
     return (
@@ -192,19 +195,19 @@ export default function Result() {
 
             <div className="flex gap-3 flex-wrap">
 
-              <a href={`https://bridgex-app.onrender.com/api/v1/download/${data.xbrl_csv?.csv}`} download>
+              <a href={`https://bridgex-app.onrender.com/api/v1/download/${filename}`} download>
                 <button className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
                   CSV Report
                 </button>
               </a>
 
-              <a href={`https://bridgex-app.onrender.com/api/v1/download/${data.xbrl_csv?.metadata}`} download>
+              <a href={`https://bridgex-app.onrender.com/api/v1/download/${metadataFile}`} download>
                 <button className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
                   Metadata
                 </button>
               </a>
 
-              <a href={`https://bridgex-app.onrender.com/api/v1/download/${data.zip}`} download>
+              <a href={`https://bridgex-app.onrender.com/api/v1/download/${zipFile}`} download>
                 <button className="px-4 py-2 bg-green-600 rounded hover:bg-green-700">
                   Full Package (ZIP)
                 </button>
