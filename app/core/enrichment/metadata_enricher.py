@@ -10,11 +10,15 @@ def enrich_evidence(evidence: dict):
         # RISK ANALYSIS (FIXED)
         # -------------------------
         if field_name == "operational_availability":
-            analysis = analyze_availability(field_data)
+            analysis = analyze_availability({
+                "lineage": field_data.get("lineage", {})
+            })
             field_data["risk_flags"] = analysis.get("risk_flags", [])
 
         elif field_name == "incident_notification_time":
-            field_data["risk_flags"] = analyze_incident(field_data)
+            field_data["risk_flags"] = analyze_incident({
+                "lineage": field_data.get("lineage", {})
+            })
 
         # -------------------------
         # CONFIDENCE
