@@ -8,9 +8,13 @@ def build_passport(field):
         "value": field.get("normalized"),
         "confidence": lineage.get("confidence"),
         "conflict": lineage.get("conflict"),
-        "risk_flags": field.get("risk_flags") or lineage.get("risk_flags", []),
+
+        # 🔥 FIXED (reads from field directly)
+        "risk_flags": field.get("risk_flags", []),
+
         "decision": lineage.get("decision"),
         "mapped_field": lineage.get("mapped_field"),
+
         "source": {
             "raw_text": lineage.get("raw_text"),
             "page": lineage.get("page"),

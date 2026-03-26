@@ -17,10 +17,11 @@ def analyze_availability(field: dict):
         risks.append("NON_COMMITTED_VALUE")
         trace.append("Non-committed wording detected")
 
-    return {
-        "flags": risks,
-        "trace": trace
-    }
+    # 🔥 attach to field
+    field["risk_flags"] = risks
+    field["risk_trace"] = trace
+
+    return field
 
 
 def analyze_incident(field: dict):
@@ -34,4 +35,8 @@ def analyze_incident(field: dict):
     if "may extend" in text:
         risks.append("NON_STRICT_SLA")
 
-    return risks
+    # 🔥 attach to field
+    field["risk_flags"] = risks
+    print("AFTER ANALYSIS:", field.get("risk_flags"))
+
+    return field
