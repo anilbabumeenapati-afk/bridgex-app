@@ -1,3 +1,5 @@
+from app.core.analysis.risk_analyzer import analyze_availability, analyze_incident
+
 def enrich_evidence(evidence: dict):
     for field_name, field_data in evidence.items():
 
