@@ -9,7 +9,8 @@ def map_to_dpm(passport):
         if not field_data:
             print(f"⚠ Skipping empty field: {field_name}")
             continue
-
+        print("STEP 4 - FIELD:", field_name)
+        print("FIELD DATA:", field_data)
         # -------------------------
         # MAP FIELD → DPM
         # -------------------------
