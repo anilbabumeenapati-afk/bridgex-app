@@ -9,6 +9,9 @@ from app.core.reporting.zip_generator import create_zip
 from app.core.validation.exception_engine import build_exceptions
 from app.core.validation.validator import validate_all
 
+# 🔥 ADD THIS IMPORT
+from app.core.enrichment.metadata_enricher import enrich_evidence
+
 router = APIRouter()
 
 
@@ -33,7 +36,6 @@ def normalize_for_ui(evidence: dict):
         normalized = field.get("normalized")
         value = field.get("value")
 
-        # Ensure normalized always has {min, max}
         if isinstance(normalized, dict):
             field["normalized"] = {
                 "min": normalized.get("min"),
@@ -55,7 +57,6 @@ def normalize_for_ui(evidence: dict):
         else:
             field["normalized"] = {"min": None, "max": None}
 
-        # metadata
         field["metadata"] = field.get("metadata", {})
 
         confidence = (
@@ -86,7 +87,7 @@ def normalize_for_ui(evidence: dict):
 
 
 # -------------------------
-# 🔥 UPGRADED EXCEPTION FORMATTER
+# EXCEPTION FORMATTER
 # -------------------------
 def format_exception(issue, fallback_field):
     field = issue.get("field", fallback_field)
@@ -161,8 +162,10 @@ def approve_field(record_id: int, field_name: str):
     )
 
     # -------------------------
-    # NOT COMPLETE
+    # 🔥 ENRICH HERE (PARTIAL FLOW)
     # -------------------------
+    evidence = enrich_evidence(evidence)
+
     if not all_fields_approved(evidence):
         evidence = normalize_for_ui(evidence)
         return {
@@ -172,12 +175,14 @@ def approve_field(record_id: int, field_name: str):
         }
 
     # -------------------------
-    # ALL APPROVED
+    # 🔥 ENRICH AGAIN (FINAL FLOW)
     # -------------------------
+    evidence = enrich_evidence(evidence)
+
     evidence = normalize_for_ui(evidence)
 
     # -------------------------
-    # EXCEPTIONS (UPGRADED)
+    # EXCEPTIONS
     # -------------------------
     raw_exceptions = build_exceptions(evidence)
     exceptions = []
@@ -211,7 +216,7 @@ def approve_field(record_id: int, field_name: str):
     csv_file = report["csv"].replace("output/", "")
     metadata_file = report["metadata"].replace("output/", "")
 
-    zip_path = create_zip(
+    create_zip(
         report["csv"],
         report["metadata"],
         "output/report_bundle.zip"
@@ -230,73 +235,3 @@ def approve_field(record_id: int, field_name: str):
         },
         "zip": "report_bundle.zip"
     }
-
-
-# -------------------------
-# REJECT FIELD
-# -------------------------
-@router.post("/reject/{record_id}/{field_name}")
-def reject_field(record_id: int, field_name: str):
-    record = get_record(record_id)
-
-    if not record:
-        return {"error": "Record not found"}
-
-    evidence = record.evidence
-
-    if field_name not in evidence:
-        return {"error": "Field not found"}
-
-    old_value = evidence[field_name].copy()
-
-    evidence[field_name]["status"] = "REJECTED"
-
-    log_audit(
-        record_id=record_id,
-        field_name=field_name,
-        action="REJECTED",
-        old_value=old_value,
-        new_value=evidence[field_name]
-    )
-
-    update_record(record_id, evidence)
-
-    version = save_version(
-        record_id=record_id,
-        evidence=evidence,
-        validation=record.validation
-    )
-
-    evidence = normalize_for_ui(evidence)
-
-    return {
-        "message": f"{field_name} rejected",
-        "version": version,
-        "evidence": evidence
-    }
-
-
-# -------------------------
-# AUDIT LOGS
-# -------------------------
-@router.get("/audit/{record_id}")
-def get_audit_logs(record_id: int):
-    db = SessionLocal()
-    logs = db.query(AuditLog).filter(
-        AuditLog.record_id == record_id
-    ).all()
-    db.close()
-    return logs
-
-
-# -------------------------
-# VERSIONS
-# -------------------------
-@router.get("/versions/{record_id}")
-def get_versions(record_id: int):
-    db = SessionLocal()
-    versions = db.query(EvidenceVersion).filter(
-        EvidenceVersion.record_id == record_id
-    ).all()
-    db.close()
-    return versions

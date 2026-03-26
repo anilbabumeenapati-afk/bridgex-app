@@ -34,7 +34,7 @@ def get_evidence(record_id: int):
     # -------------------------
     # OPTIONAL: enrich (if needed)
     # -------------------------
-    # evidence = enrich_evidence(evidence)
+    evidence = enrich_evidence(evidence)
 
     return {
         "id": record.id,
