@@ -4,21 +4,20 @@ def enrich_evidence(evidence: dict):
         if not field_data:
             continue
 
-        normalized = field_data.get("normalized")
-
         # -------------------------
-        # 🔥 RUN RISK ANALYSIS
+        # RISK ANALYSIS (FIXED)
         # -------------------------
         if field_name == "operational_availability":
             analysis = analyze_availability(field_data)
-            field_data = analysis  # updated field
+            field_data["risk_flags"] = analysis.get("risk_flags", [])
 
         elif field_name == "incident_notification_time":
-            field_data = analyze_incident(field_data)
+            field_data["risk_flags"] = analyze_incident(field_data)
 
         # -------------------------
-        # CONFIDENCE SCORE
+        # CONFIDENCE
         # -------------------------
+        normalized = field_data.get("normalized")
         confidence = 0.9
 
         if not normalized:
@@ -27,26 +26,12 @@ def enrich_evidence(evidence: dict):
             confidence = 0.7
 
         # -------------------------
-        # PRIORITY
-        # -------------------------
-        if field_name in ["operational_availability", "incident_notification_time"]:
-            priority = "high"
-        else:
-            priority = "medium"
-
-        # -------------------------
-        # ATTACH METADATA
+        # METADATA
         # -------------------------
         field_data["metadata"] = {
             "confidence": confidence,
-            "priority": priority,
-            "review_required": (
-                confidence < 0.8 or len(field_data.get("risk_flags", [])) > 0
-            )
+            "priority": "high",
+            "review_required": confidence < 0.8
         }
-
-        # 🔥 ENSURE WRITE BACK
-        evidence[field_name] = field_data
-        print("ENRICHED FIELD:", field_name, field_data.get("risk_flags"))
 
     return evidence
