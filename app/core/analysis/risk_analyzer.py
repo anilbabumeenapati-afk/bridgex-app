@@ -7,21 +7,20 @@ def analyze_availability(field: dict):
 
     if conflict.get("detected"):
         risks.append("SOURCE_CONTRADICTION")
-        trace.append("Multiple values detected in document")
+        trace.append("Multiple values detected")
 
     if "between" in text or "-" in text:
         risks.append("HIGH_VARIANCE")
-        trace.append("Range detected in source text")
+        trace.append("Range detected")
 
     if "approx" in text or "realistically" in text:
         risks.append("NON_COMMITTED_VALUE")
-        trace.append("Non-committed wording detected")
+        trace.append("Non-committed wording")
 
-    # 🔥 attach to field
-    field["risk_flags"] = risks
-    field["risk_trace"] = trace
-
-    return field
+    return {
+        "risk_flags": risks,
+        "risk_trace": trace
+    }
 
 
 def analyze_incident(field: dict):
@@ -35,8 +34,4 @@ def analyze_incident(field: dict):
     if "may extend" in text:
         risks.append("NON_STRICT_SLA")
 
-    # 🔥 attach to field
-    field["risk_flags"] = risks
-    print("AFTER ANALYSIS:", field.get("risk_flags"))
-
-    return field
+    return risks

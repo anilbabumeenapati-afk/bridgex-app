@@ -74,12 +74,14 @@ def extract_fields(pages):
     # 2. SYNONYM MAPPING
     # =========================
     if availability_raw:
-        mapped = map_synonym(availability_raw.get("source_text"))
-        availability_raw["mapped_field"] = mapped
+        availability_raw["mapped_field"] = map_synonym(
+            availability_raw.get("source_text")
+        )
 
     if incident_raw:
-        mapped = map_synonym(incident_raw.get("source_text"))
-        incident_raw["mapped_field"] = mapped
+        incident_raw["mapped_field"] = map_synonym(
+            incident_raw.get("source_text")
+        )
 
     # =========================
     # 3. BUILD FIELD OBJECTS
@@ -90,7 +92,7 @@ def extract_fields(pages):
     # =========================
     # 4. ATTACH LINEAGE
     # =========================
-    if availability and availability_raw:
+    if availability:
         availability.lineage = {
             "raw_text": availability_raw.get("source_text"),
             "page": availability_raw.get("page"),
@@ -101,7 +103,7 @@ def extract_fields(pages):
             "mapped_field": availability_raw.get("mapped_field")
         }
 
-    if incident_time and incident_raw:
+    if incident_time:
         incident_time.lineage = {
             "raw_text": incident_raw.get("source_text"),
             "page": incident_raw.get("page"),
@@ -113,17 +115,25 @@ def extract_fields(pages):
         }
 
     # =========================
-    # RISK METADATA
+    # 5. RISK METADATA (FIXED)
     # =========================
     if availability:
         analysis = analyze_availability(availability.dict())
-        availability.lineage["risk_flags"] = analysis["flags"]
+
+        print("AVAILABILITY ANALYSIS:", analysis)
+
+        availability.lineage["risk_flags"] = analysis.get("risk_flags", [])
+        availability.lineage["risk_trace"] = analysis.get("risk_trace", [])
 
     if incident_time:
-        incident_time.lineage["risk_flags"] = analysis["trace"]
+        incident_analysis = analyze_incident(incident_time.dict())
+
+        print("INCIDENT ANALYSIS:", incident_analysis)
+
+        incident_time.lineage["risk_flags"] = incident_analysis or []
 
     # =========================
-    # 5. AUTO DECISION (CONFIDENCE)
+    # 6. AUTO DECISION
     # =========================
     if availability:
         availability.status = assign_decision(availability.dict())
@@ -140,7 +150,7 @@ def extract_fields(pages):
         }
 
     # =========================
-    # 6. VALIDATION INPUT
+    # 7. VALIDATION INPUT
     # =========================
     evidence_dict = {
         "DORA_AVAILABILITY_METRIC": availability.dict() if availability else None,
@@ -148,7 +158,7 @@ def extract_fields(pages):
     }
 
     # =========================
-    # 7. VALIDATION
+    # 8. VALIDATION
     # =========================
     validation_result = validate_all(evidence_dict)
 
@@ -159,36 +169,36 @@ def extract_fields(pages):
         incident_time.validation = validation_result["fields"].get("DORA_INCIDENT_RESPONSE_TIME")
 
     # =========================
-    # 8. FINAL OBJECT
+    # 9. FINAL OBJECT
     # =========================
     evidence = EvidenceObject(
         operational_availability=availability,
         incident_notification_time=incident_time
     )
+
     # =========================
-# PASSPORT BUILDING
-# =========================
+    # 10. PASSPORT
+    # =========================
     passport = {
         "operational_availability": build_passport(availability.dict()) if availability else None,
         "incident_notification_time": build_passport(incident_time.dict()) if incident_time else None
-}
+    }
+
     # =========================
-    # 9. DRIFT DETECTION
+    # 11. DRIFT
     # =========================
     drift_result = detect_drift(
         pages,
-    {
-        "operational_availability": availability,
-        "incident_notification_time": incident_time
-    }
-)
-    # =========================
-    # 9. DEBUG
-    # =========================
+        {
+            "operational_availability": availability,
+            "incident_notification_time": incident_time
+        }
+    )
+
     print("FINAL EVIDENCE:", evidence.dict())
 
     # =========================
-    # 10. SAVE
+    # 12. SAVE
     # =========================
     record_id = save_evidence(
         evidence=evidence.dict(),
@@ -196,7 +206,7 @@ def extract_fields(pages):
     )
 
     # =========================
-    # 11. RESPONSE
+    # 13. RESPONSE
     # =========================
     return {
         "record_id": record_id,
@@ -204,12 +214,10 @@ def extract_fields(pages):
         "evidence": evidence.dict(),
         "passport": passport,
         "validation": validation_result,
-        "drift":    drift_result,
-
-        # ✅ VERSION INFO
-    "meta": {
-        "taxonomy_version": TAXONOMY_VERSION,
-        "mapping_version": MAPPING_VERSION,
-        "engine_version": ENGINE_VERSION
-    }
+        "drift": drift_result,
+        "meta": {
+            "taxonomy_version": TAXONOMY_VERSION,
+            "mapping_version": MAPPING_VERSION,
+            "engine_version": ENGINE_VERSION
+        }
     }
