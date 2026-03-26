@@ -1,6 +1,7 @@
 from app.core.mapping.dpm_registry import DPM_REGISTRY, FIELD_MAPPING
 
 def map_to_dpm(passport):
+    print("STEP 3 - PASSPORT INPUT:", passport)
     result = {}
 
     for field_name, field_data in passport.items():
