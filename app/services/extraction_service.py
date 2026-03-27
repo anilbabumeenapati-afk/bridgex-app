@@ -1,4 +1,5 @@
-from app.models.evidence import (
+print("🔥 NEW CODE RUNNING")
+from app.models.evidence_model import (
     EvidenceObject,
     FieldEvidence
 )
@@ -7,7 +8,8 @@ from app.config.versioning import (
     MAPPING_VERSION,
     ENGINE_VERSION
 )
-
+from app.core.extraction.certifications import extract_certifications
+from app.core.aggregation.conflict_resolver import resolve_certifications
 from app.core.validation.validator import validate_all
 from app.core.validation.gatekeeper import gatekeep_document
 from app.core.analysis.risk_analyzer import (
@@ -18,15 +20,16 @@ from app.core.passport.passport_builder import build_passport
 
 from app.core.aggregation.conflict_resolver import (
     resolve_availability,
-    resolve_incident_time
+    resolve_incident_time,
+    resolve_data_residency
 )
 
 from app.core.extraction.availability import extract_availability
 from app.core.extraction.incident import extract_incident_time
+from app.core.extraction.data_residency import extract_data_residency
+
 from app.core.validation.drift_detector import detect_drift
-
 from app.core.mapping.synonym_mapper import map_synonym
-
 from app.db.repository import save_evidence
 
 
@@ -35,11 +38,7 @@ from app.db.repository import save_evidence
 # -------------------------
 def assign_decision(field: dict):
     confidence = field.get("lineage", {}).get("confidence", 0)
-
-    if confidence >= 0.9:
-        return "APPROVED"
-    else:
-        return "PENDING"
+    return "APPROVED" if confidence >= 0.9 else "PENDING"
 
 
 # -------------------------
@@ -66,9 +65,13 @@ def extract_fields(pages):
     # =========================
     availability_candidates = extract_availability(pages)
     incident_candidates = extract_incident_time(pages)
+    data_residency_candidates = extract_data_residency(pages)
 
     availability_raw = resolve_availability(availability_candidates)
     incident_raw = resolve_incident_time(incident_candidates)
+    data_residency_raw = resolve_data_residency(data_residency_candidates)
+    cert_candidates = extract_certifications(pages)
+    cert_raw = resolve_certifications(cert_candidates)
 
     # =========================
     # 2. SYNONYM MAPPING
@@ -88,6 +91,8 @@ def extract_fields(pages):
     # =========================
     availability = FieldEvidence(**availability_raw) if availability_raw else None
     incident_time = FieldEvidence(**incident_raw) if incident_raw else None
+    data_residency = FieldEvidence(**data_residency_raw) if data_residency_raw else FieldEvidence()
+    certifications = FieldEvidence(**cert_raw) if cert_raw else FieldEvidence()
 
     # =========================
     # 4. ATTACH LINEAGE
@@ -114,22 +119,36 @@ def extract_fields(pages):
             "mapped_field": incident_raw.get("mapped_field")
         }
 
+    if data_residency and data_residency_raw:
+        data_residency.lineage = {
+            "raw_text": data_residency_raw.get("source_text"),
+            "page": data_residency_raw.get("page"),
+            "extraction_rule": "data_residency_regex_v1",
+            "confidence": data_residency_raw.get("confidence", 0.9),
+            "source_file": data_residency_raw.get("source_file", "unknown"),
+            "conflict": data_residency_raw.get("conflict")
+        }
+    
+    if certifications and cert_raw:
+        certifications.lineage = {
+            "raw_text": cert_raw.get("source_text"),
+            "page": cert_raw.get("page"),
+            "extraction_rule": "certifications_regex_v1",
+            "confidence": cert_raw.get("confidence", 0.95),
+            "source_file": cert_raw.get("source_file", "unknown"),
+            "conflict": cert_raw.get("conflict")
+    }
+
     # =========================
-    # 5. RISK METADATA (FIXED)
+    # 5. RISK METADATA
     # =========================
     if availability:
         analysis = analyze_availability(availability.dict())
-
-        print("AVAILABILITY ANALYSIS:", analysis)
-
         availability.lineage["risk_flags"] = analysis.get("risk_flags", [])
         availability.lineage["risk_trace"] = analysis.get("risk_trace", [])
 
     if incident_time:
         incident_analysis = analyze_incident(incident_time.dict())
-
-        print("INCIDENT ANALYSIS:", incident_analysis)
-
         incident_time.lineage["risk_flags"] = incident_analysis or []
 
     # =========================
@@ -173,7 +192,9 @@ def extract_fields(pages):
     # =========================
     evidence = EvidenceObject(
         operational_availability=availability,
-        incident_notification_time=incident_time
+        incident_notification_time=incident_time,
+        data_residency=data_residency,
+        security_certifications=certifications
     )
 
     # =========================
@@ -181,7 +202,9 @@ def extract_fields(pages):
     # =========================
     passport = {
         "operational_availability": build_passport(availability.dict()) if availability else None,
-        "incident_notification_time": build_passport(incident_time.dict()) if incident_time else None
+        "incident_notification_time": build_passport(incident_time.dict()) if incident_time else None,
+        "data_residency": build_passport(data_residency.dict()) if data_residency else None,
+        "security_certifications": build_passport(certifications.dict()) if certifications else None
     }
 
     # =========================
@@ -206,6 +229,22 @@ def extract_fields(pages):
     )
 
     # =========================
+# 12.5 MISSING FIELDS
+# =========================
+    missing_fields = []
+
+    if not availability or not availability.value:
+        missing_fields.append("operational_availability")
+
+    if not incident_time or not incident_time.value:
+        missing_fields.append("incident_notification_time")
+
+    if not data_residency or not data_residency.value:
+        missing_fields.append("data_residency")
+
+    if not certifications or not certifications.value:
+        missing_fields.append("security_certifications")
+    # =========================
     # 13. RESPONSE
     # =========================
     return {
@@ -218,6 +257,9 @@ def extract_fields(pages):
         "meta": {
             "taxonomy_version": TAXONOMY_VERSION,
             "mapping_version": MAPPING_VERSION,
-            "engine_version": ENGINE_VERSION
+            "engine_version": ENGINE_VERSION,
+            "missing_fields": missing_fields,
+            "document_id": "doc_001",   # 🔥 ADD
+            "source_hash": "abc123" 
         }
     }

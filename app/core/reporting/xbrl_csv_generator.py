@@ -2,7 +2,6 @@ import csv
 import json
 import os
 
-print("STEP 1 - CSV INPUT:", dpm_output)
 
 def generate_xbrl_csv(dpm_output, entity, period, output_dir="output"):
     os.makedirs(output_dir, exist_ok=True)
