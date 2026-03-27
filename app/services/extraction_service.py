@@ -91,8 +91,8 @@ def extract_fields(pages):
     # =========================
     availability = FieldEvidence(**availability_raw) if availability_raw else None
     incident_time = FieldEvidence(**incident_raw) if incident_raw else None
-    data_residency = FieldEvidence(**data_residency_raw) if data_residency_raw else FieldEvidence()
-    certifications = FieldEvidence(**cert_raw) if cert_raw else FieldEvidence()
+    data_residency = FieldEvidence(**data_residency_raw) if data_residency_raw else FieldEvidence(lineage={})
+    certifications = FieldEvidence(**cert_raw) if cert_raw else FieldEvidence(lineage={})
 
     # =========================
     # 4. ATTACH LINEAGE
