@@ -1,0 +1,3 @@
+field,min,max,unit,risk_flags
+C_01.01.a,99.5,99.5,percent,SOURCE_CONTRADICTION;INTRA_DOCUMENT_CONFLICT
+C_02.01.b,10,20,minutes,INTRA_DOCUMENT_CONFLICT

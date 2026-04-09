@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import type { AxiosProgressEvent } from "axios";
+import { uploadFile } from "../api/api";
 
 export default function Upload() {
   const [file, setFile] = useState<File | null>(null);
@@ -21,39 +22,45 @@ export default function Upload() {
     setError("");
     setProgress(0);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await axios.post(
-        "https://bridgex-app.onrender.com/api/v1/upload/",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          onUploadProgress: (progressEvent) => {
-            if (progressEvent.total) {
-              const percent = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              setProgress(percent);
-            }
-          }
+      const res = await uploadFile(file, (progressEvent: AxiosProgressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setProgress(percent);
         }
-      );
+      });
 
-      const recordId = res.data.message?.match(/\d+/)?.[0];
+      console.log("UPLOAD RESPONSE:", res.data);
 
-      if (!recordId) {
-        setError("Upload succeeded but no record ID found");
+      if (res.data?.error) {
+        setError(`Upload failed: ${res.data.error}`);
         return;
       }
 
-      // slight delay for UX polish
-      setTimeout(() => navigate(`/review/${recordId}`), 800);
+      if (res.data?.reason && !res.data?.record_id) {
+        setError(`Upload failed: ${res.data.reason}`);
+        return;
+      }
 
-    } catch (err) {
+      const recordId =
+        res.data?.record_id ??
+        (typeof res.data?.message === "string"
+          ? res.data.message.match(/\d+/)?.[0]
+          : undefined);
+
+      if (!recordId) {
+        setError(
+          `Upload returned no record ID. Response: ${JSON.stringify(res.data)}`
+        );
+        return;
+      }
+
+      setTimeout(() => navigate(`/review/${recordId}`), 500);
+    } catch (err: unknown) {
       console.error(err);
-      setError("Upload failed. Try again.");
+      setError("Upload failed. Check backend logs and browser console.");
     } finally {
       setLoading(false);
     }
@@ -68,16 +75,12 @@ export default function Upload() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-      
       <div className="w-full max-w-lg p-8 rounded-2xl backdrop-blur-lg bg-white/10 shadow-xl border border-white/20">
-        
-        {/* Title */}
         <h2 className="text-2xl font-semibold mb-2">Upload Document</h2>
         <p className="text-sm text-gray-300 mb-6">
           Drag & drop your file or click to browse
         </p>
 
-        {/* Drop Zone */}
         <div
           onClick={() => inputRef.current?.click()}
           onDragOver={(e) => {
@@ -104,14 +107,12 @@ export default function Upload() {
           onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
 
-        {/* File Info */}
         {file && (
           <div className="mt-4 text-sm text-gray-300">
             Selected: <span className="font-medium">{file.name}</span>
           </div>
         )}
 
-        {/* Progress Bar */}
         {loading && (
           <div className="mt-4">
             <div className="h-2 bg-gray-700 rounded">
@@ -126,12 +127,8 @@ export default function Upload() {
           </div>
         )}
 
-        {/* Error */}
-        {error && (
-          <div className="mt-4 text-red-400 text-sm">{error}</div>
-        )}
+        {error && <div className="mt-4 text-red-400 text-sm break-words">{error}</div>}
 
-        {/* Button */}
         <button
           onClick={handleUpload}
           disabled={loading}

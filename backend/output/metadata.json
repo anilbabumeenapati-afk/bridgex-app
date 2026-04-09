@@ -1,0 +1,51 @@
+{
+  "report_type": "DORA_POC",
+  "fields": [
+    "C_01.01.a",
+    "C_02.01.b"
+  ],
+  "columns": [
+    "field",
+    "min",
+    "max",
+    "unit",
+    "risk_flags"
+  ],
+  "field_metadata": {
+    "C_01.01.a": {
+      "unit": "percent",
+      "risk_flags": [
+        "SOURCE_CONTRADICTION",
+        "INTRA_DOCUMENT_CONFLICT"
+      ],
+      "trust_score": 36,
+      "binding_strength": "weak",
+      "verification_tier": "document_backed",
+      "status": "APPROVED",
+      "source": {
+        "raw_text": "Uptime?? approx 99.5% monthly but depends on infra / third parties / holidays / force majeure /",
+        "page": 1,
+        "file": "midsize_bank_sla_messy.pdf",
+        "rule": "availability_regex_v1"
+      },
+      "claim": {}
+    },
+    "C_02.01.b": {
+      "unit": "minutes",
+      "risk_flags": [
+        "INTRA_DOCUMENT_CONFLICT"
+      ],
+      "trust_score": 44,
+      "binding_strength": "weak",
+      "verification_tier": "document_backed",
+      "status": "APPROVED",
+      "source": {
+        "raw_text": "Critical incidents -> response: 10-20 min (team dependent), resolution target 4h but may extend.",
+        "page": 1,
+        "file": "midsize_bank_sla_messy.pdf",
+        "rule": "incident_regex_v1"
+      },
+      "claim": {}
+    }
+  }
+}
