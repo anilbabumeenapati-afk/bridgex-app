@@ -206,8 +206,8 @@ export default function Review() {
       <div className="fixed top-0 left-0 w-full h-20 bg-black/40 backdrop-blur border-b border-white/10 flex items-center justify-between px-6 z-50">
         <div className="flex items-center">
           <img
-            src="/BridgeX-logo.png"
-            alt="BridgeX"
+            src="/REGADAPT-logo.png"
+            alt="REGADAPT"
             className="h-12 object-contain"
           />
         </div>

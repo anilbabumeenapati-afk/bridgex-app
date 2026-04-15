@@ -74,7 +74,17 @@ export default function Upload() {
   };
 
   return (
+    
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+      <div className="fixed top-0 left-0 w-full h-20 bg-black/40 backdrop-blur border-b border-white/10 flex items-center justify-between px-6 z-50">
+        <div className="flex items-center">
+          <img
+            src="/REGADAPT-logo.png"
+            alt="REGADAPT"
+            className="h-12 object-contain"
+          />
+        </div>
+        </div>
       <div className="w-full max-w-lg p-8 rounded-2xl backdrop-blur-lg bg-white/10 shadow-xl border border-white/20">
         <h2 className="text-2xl font-semibold mb-2">Upload Document</h2>
         <p className="text-sm text-gray-300 mb-6">
