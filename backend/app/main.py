@@ -18,7 +18,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "https://bridgex-app-git-main-anilbabuaflcrs-projects.vercel.app",
-        "https://bridgex-app.vercel.app"
+        "https://regadapat.vercel.app"
     ],
     allow_credentials=False,
     allow_methods=["*"],
